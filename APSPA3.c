@@ -103,66 +103,79 @@ int main(int argc,char *argv[]){
    	mpi_err = MPI_Recv(mat,c_Rows*n_Cols,MPI_INT,0,tag,MPI_COMM_WORLD,&status);
    	}
    	 /*********************Processing*******************************/
-   	for (k=0;k<n_Rows;k++){
-        
+   	for (k=0;k<n_Rows;k++)
+   	{
         //If Data is needed to be sent
-		 if(k<=myid*c_Rows+c_Rows - 1 && k>=myid*c_Rows){
-		  printf("%d says:Broadcasting row %d from process %d \n",myid,k,myid);
-		  show_data(b[k%c_Rows],n_Cols);
+		 if(k<=myid*c_Rows+c_Rows - 1 && k>=myid*c_Rows)
+		 {
+		 	printf("%d says:Broadcasting row %d from process %d \n",myid,k,myid);
+		  	show_data(b[k%c_Rows],n_Cols);
 		 	mpi_err = MPI_Bcast(b[k%c_Rows],n_Cols,MPI_INT,myid,MPI_COMM_WORLD);
-		 	for(i=0;i<c_Rows;i++){
-            for(j=0;j<n_Cols;j++){
-                b[i][j] = minimum(b[i][j],b[i][k]+b[k%c_Rows][j]);
-            }
-      }
+		 	for(i=0;i<c_Rows;i++)
+		 	{
+            	for(j=0;j<n_Cols;j++)
+            	{
+                	b[i][j] = minimum(b[i][j],b[i][k]+b[k%c_Rows][j]);
+            	}
+      		}
 		 }
 		 
         //If data is needed
-		 else{
+		 else
+		 {
 		 	otherid = k/c_Rows;
 		 	printf("%d says:Require row %d from process %d \n",myid,k,otherid);
 		 	mpi_err = MPI_Bcast(b_Row,n_Cols,MPI_INT,otherid,MPI_COMM_WORLD);
 		 	show_data(b_Row,n_Cols);
-		 
-        for(i=0;i<c_Rows;i++){
-            for(j=0;j<n_Cols;j++){
-                b[i][j] = minimum(b[i][j],b[i][k]+b_Row[j]);
-            }
-        }
-        
-       }
+
+		 	for(i=0;i<c_Rows;i++)
+		 	{
+            	for(j=0;j<n_Cols;j++)
+            	{
+                	b[i][j] = minimum(b[i][j],b[i][k]+b_Row[j]);
+            	}
+        	}
+       	}
      }
      
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 /*****************Taking data back*************************************/
-     if(myid==0){
-     	for(i=0;i<c_Rows;i++){
-		for(j=0;j<n_Cols;j++){
-			fprintf(file_writer,"%d ",b[i][j]);
-			//printf("%d\t",b[i][j]);
-		}
+     if(myid==0)
+     {
+     	for(i=0;i<c_Rows;i++)
+     	{
+			for(j=0;j<n_Cols;j++)
+			{
+				fprintf(file_writer,"%d ",b[i][j]);
+				//printf("%d\t",b[i][j]);
+			}
 		fprintf(file_writer,"\n");
 		//printf("\n");
-	}
-        for(k=1;k<totalnodes;k++){
+		}
+
+        for(k=1;k<totalnodes;k++)
+        {
             mpi_err = MPI_Recv(mat,c_Rows*n_Cols,MPI_INT,k,tag,MPI_COMM_WORLD,&status);
-            for(i=0;i<c_Rows;i++){
-                for(j=0;j<n_Cols;j++){
+            for(i=0;i<c_Rows;i++)
+            {
+                for(j=0;j<n_Cols;j++)
+                {
                     fprintf(file_writer,"%d ",b[i][j]);
                     //printf("%d\t",b[i][j]);
                 }
             fprintf(file_writer,"\n");
             //printf("\n");
-        }
-    }
+        	}
+    	}
     
-    fclose(file_reader);
-	fclose(file_writer);
-     }
+    	fclose(file_reader);
+		fclose(file_writer);
+    }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //Non root processor sends back computed data
-     else{
+     else
+     {
      	mpi_err = MPI_Send(mat,c_Rows*n_Cols,MPI_INT,0,tag,MPI_COMM_WORLD);
      }
 
@@ -171,15 +184,18 @@ int main(int argc,char *argv[]){
 /*******************************************Main function ends***************************************************/
 
 /********************Function defenition************************/
-void MPI_initialize(int *argc,char ***argv){
+void MPI_initialize(int *argc,char ***argv)
+{
 	mpi_err = MPI_Init(argc,argv);
-  mpi_err = MPI_Comm_size( MPI_COMM_WORLD,&totalnodes);
+	mpi_err = MPI_Comm_size( MPI_COMM_WORLD,&totalnodes);
 	mpi_err = MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 }
 
-void file_seeker(FILE *fp,int n){
+void file_seeker(FILE *fp,int n)
+{
 	int i,temp,f_err;
-	for(i=0;i<n;i++){
+	for(i=0;i<n;i++)
+	{
 		f_err=fscanf(fp,"%d",&temp);
 	}
 }
