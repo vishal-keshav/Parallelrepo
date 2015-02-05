@@ -10,6 +10,10 @@
 //Advantage - Space requirement reduced by a factor of no. of process
 //Disadvantage - Reading and writing may take time (More overhead), increases running time
 
+//TODO - Non Divisible number of processes
+//TODO - Random Matrix generator implementation
+//TODO - Time analysis
+
 
 /******************************************Global variables**************************************************/
 int totalnodes,myid;
@@ -85,6 +89,9 @@ int main(int argc,char *argv[]){
 		 		f_err = fscanf(file_reader,"%d",&b[j][k]);
 		 }
 	 }
+	 /*sleep(myid);
+	 printf("%d shows received data\n",myid);
+   	 show_data(mat,c_Rows*n_Cols);*/
   }
    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//   
@@ -101,6 +108,9 @@ int main(int argc,char *argv[]){
    	}
    	//receives data to work on
    	mpi_err = MPI_Recv(mat,c_Rows*n_Cols,MPI_INT,0,tag,MPI_COMM_WORLD,&status);
+   	/*sleep(myid);
+   	printf("%d shows received data\n",myid);
+   	show_data(mat,c_Rows*n_Cols);*/
    	}
    	 /*********************Processing*******************************/
    	for (k=0;k<n_Rows;k++)
@@ -108,8 +118,8 @@ int main(int argc,char *argv[]){
         //If Data is needed to be sent
 		 if(k<=myid*c_Rows+c_Rows - 1 && k>=myid*c_Rows)
 		 {
-		 	printf("%d says:Broadcasting row %d from process %d \n",myid,k,myid);
-		  	show_data(b[k%c_Rows],n_Cols);
+		 	//printf("%d says:Broadcasting row %d from process %d \n",myid,k,myid);
+		  	//show_data(b[k%c_Rows],n_Cols);
 		 	mpi_err = MPI_Bcast(b[k%c_Rows],n_Cols,MPI_INT,myid,MPI_COMM_WORLD);
 		 	for(i=0;i<c_Rows;i++)
 		 	{
@@ -124,9 +134,9 @@ int main(int argc,char *argv[]){
 		 else
 		 {
 		 	otherid = k/c_Rows;
-		 	printf("%d says:Require row %d from process %d \n",myid,k,otherid);
+		 	//printf("%d says:Require row %d from process %d \n",myid,k,otherid);
 		 	mpi_err = MPI_Bcast(b_Row,n_Cols,MPI_INT,otherid,MPI_COMM_WORLD);
-		 	show_data(b_Row,n_Cols);
+		 	//show_data(b_Row,n_Cols);
 
 		 	for(i=0;i<c_Rows;i++)
 		 	{
@@ -137,9 +147,13 @@ int main(int argc,char *argv[]){
         	}
        	}
      }
+     //sleep(3);
+     //printf("%d is my id\n",totalnodes);
+     //show_data(mat,c_Rows*n_Cols);
      
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 /*****************Taking data back*************************************/
+     MPI_Barrier(MPI_COMM_WORLD);
      if(myid==0)
      {
      	for(i=0;i<c_Rows;i++)
@@ -152,10 +166,12 @@ int main(int argc,char *argv[]){
 		fprintf(file_writer,"\n");
 		//printf("\n");
 		}
-
         for(k=1;k<totalnodes;k++)
         {
+        	
+        	//printf("\nReceiving from %d \n",k);
             mpi_err = MPI_Recv(mat,c_Rows*n_Cols,MPI_INT,k,tag,MPI_COMM_WORLD,&status);
+            //show_data(mat,c_Rows*n_Cols);
             for(i=0;i<c_Rows;i++)
             {
                 for(j=0;j<n_Cols;j++)
@@ -170,14 +186,19 @@ int main(int argc,char *argv[]){
     
     	fclose(file_reader);
 		fclose(file_writer);
+
     }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 //Non root processor sends back computed data
      else
      {
+     	//printf("%d is sending data\n",myid);
      	mpi_err = MPI_Send(mat,c_Rows*n_Cols,MPI_INT,0,tag,MPI_COMM_WORLD);
      }
+
+    mpi_err = MPI_Finalize();
+  	return 0;
 
 
 }
